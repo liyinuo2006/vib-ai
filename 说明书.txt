@@ -1,0 +1,344 @@
+DeepSeekAI 指令说明书（用户版）
+================================
+
+这是一份只面向最终用户的说明书（不包含开发/打包细节）。
+
+推荐运行方式：Windows Terminal / PowerShell / cmd
+（不建议使用 PyCharm Run 窗口，因为它不是标准终端，可能导致颜色/Markdown 显示异常）
+
+
+一、第一次使用（必须）
+--------------------
+
+1) 设置 API Key（DEEPSEEK_API_KEY）
+
+你需要准备 DeepSeek 的 API Key（通常以 sk- 开头）。
+
+方式 A：使用 .env 文件（推荐）
+- 在 DeepSeekAI.exe 同目录创建/编辑 “.env” 文件：
+  DEEPSEEK_API_KEY=sk-xxxx
+- 保存后重新启动程序。
+
+提示：如果你第一次运行 exe 没有设置 API Key，程序会自动在 exe 同目录生成 .env 模板。
+
+方式 B：设置系统环境变量
+- 新建/设置系统环境变量：DEEPSEEK_API_KEY=sk-xxxx
+- 重新打开终端，再运行 DeepSeekAI.exe。
+
+
+二、基本使用
+----------
+
+1) 普通聊天
+- 直接输入文本，回车发送。//默认普通流式输出，md格式请看指令集。
+
+2) 多行输入（粘贴大段文本/代码）
+- 输入 /multi 打开多行模式
+- 连续输入多行内容
+- 单独输入一行 END 结束并发送
+- 再次输入 /multi 关闭多行模式
+
+
+三、指令总览（所有指令都必须以 / 开头）
+------------------------------------
+
+说明：
+- 下面所有“用法”里的尖括号 <> 表示必须提供的参数。
+- 方括号 [] 表示可选参数。
+- 例子可以直接照抄使用。
+
+
+1) /help
+--------
+用途：显示全部指令帮助。
+用法：
+  /help
+示例：
+  /help
+
+
+2) /version
+-----------
+用途：显示版本与运行环境信息（反馈问题时请把这里输出贴给作者）。
+用法：
+  /version
+你会看到类似：
+- 程序版本号
+- Python 版本
+- 系统平台信息
+- 是否为 exe 运行（Frozen）
+- exe 路径（如果是 exe 运行）
+
+
+3) /quit  与 /exit
+-----------------
+用途：退出程序。
+用法：
+  /quit
+  /exit
+示例：
+  /quit
+
+
+4) /save
+--------
+用途：保存当前对话到本地文件。
+用法：
+  /save [path/]name
+说明：
+- name 为文件名（不需要加 .json）
+- 可选 path 用于分类/目录（用 / 分隔）
+示例：
+  /save test1
+  /save work/projectA/chat1
+
+常见问题：
+- 如果只写文件名，默认保存到 default 分类。
+
+
+5) /load
+--------
+用途：加载历史对话。
+用法：
+  /load               （不带参数：列出所有存档）
+  /load [path/]name   （带参数：加载指定存档）
+示例：
+  /load
+  /load default/test1
+  /load work/projectA/chat1
+
+
+6) /clear  与 /reset
+-------------------
+用途：清空上下文（开始新话题）。
+说明：
+- 清空后，AI 不会再记得之前对话内容。
+用法：
+  /clear
+  /reset
+示例：
+  /clear
+
+
+7) /undo
+--------
+用途：撤销上一轮对话。
+说明：
+- 通常会删除“你最后一次提问 + AI 最后一次回答”。
+用法：
+  /undo
+示例：
+  /undo
+
+
+8) /temp
+--------
+用途：设置 Temperature（创造力/随机性）。
+范围：0.0 ~ 2.0
+说明：
+- 数值越低：越稳定、越严谨
+- 数值越高：越发散、越有创意
+用法：
+  /temp <0.0-2.0>
+示例：
+  /temp 0.2
+  /temp 0.7
+  /temp 1.2
+
+
+9) /tokens
+----------
+用途：设置单次回答的最大 tokens（回答长度上限）。
+说明：
+- tokens 越大，回答可能越长（也可能更耗时/更占用额度）
+用法：
+  /tokens <n>
+示例：
+  /tokens 512
+  /tokens 1024
+  /tokens 2048
+
+
+10) /system
+-----------
+用途：设置 System Prompt（系统提示词 / 人设 / 规则）。
+说明：
+- System Prompt 会作为对话的“系统角色”消息，影响 AI 的行为风格。
+- 常用于：让 AI 扮演某角色、遵守格式要求、只用中文等。
+
+用法 A：单行设置
+  /system <text>
+示例：
+  /system 你是一个资深 Python 工程师，回答要简洁并给出可运行代码。
+
+用法 B：多行设置（推荐）
+  /system
+  或
+  /system multi
+  或
+  /system ml
+然后进入多行输入，输入 END 结束。
+
+用法 C：从文件加载
+  /system load <file_path>
+示例：
+  /system load C:\\path\\to\\system_prompt.txt
+
+
+11) /persona
+------------
+用途：管理“预设人设”（Persona）。
+说明：
+- Persona 本质是保存/复用 System Prompt。
+
+(1) 列出所有 persona
+用法：
+  /persona list
+
+(2) 加载 persona
+用法：
+  /persona load <name>
+示例：
+  /persona load coder
+
+(3) 保存当前 system prompt 为 persona
+前提：你已经用 /system 设置了 system prompt。
+用法：
+  /persona save <name>
+示例：
+  /persona save my_role
+
+(4) 删除 persona
+用法：
+  /persona del <name>
+示例：
+  /persona del my_role
+
+
+12) /view
+---------
+用途：查看当前上下文消息列表（系统/用户/AI 的消息）。
+用法：
+  /view          （预览列表，长内容会截断）
+  /view all      （显示完整内容）
+  /view <index>  （查看指定索引消息的完整内容）
+示例：
+  /view
+  /view all
+  /view 3
+
+
+13) /search
+-----------
+用途：在当前上下文消息中搜索关键词。
+用法：
+  /search <keyword>
+示例：
+  /search docker
+  /search 报错
+
+
+14) /del  与 /delete
+-------------------
+用途：删除上下文中的指定消息（用于修正上下文）。
+说明：
+- 支持删除多个索引：逗号分隔
+- 支持区间：2-5
+- 程序会阻止删除 system（通常为索引 0）
+
+用法：
+  /del <spec>
+  /delete <spec>
+spec 例子：
+- 1
+- 1,3,5
+- 2-5
+- 1,3-6
+
+示例：
+  /del 3
+  /del 1,2,5
+  /del 2-6
+
+
+15) /add
+--------
+用途：手动插入一条消息到上下文（高级/调试用）。
+说明：
+- role 可以是：system / user / assistant
+- role 也支持简写：sys / u / ai
+- 可选 index：插入位置；不写 index 则追加到末尾
+
+用法 A：追加
+  /add <role> <content>
+示例：
+  /add user 我接下来要你按 JSON 输出。
+  /add ai 好的。
+
+用法 B：指定插入位置
+  /add <index> <role> <content>
+示例：
+  /add 1 user 请忽略之前的要求。
+
+
+16) /multi  与 /ml
+-----------------
+用途：切换“全局多行输入模式”。
+说明：
+- 开启后，每次输入都会进入多行录入，直到 END。
+- 适合你经常粘贴大段内容的场景。
+
+用法：
+  /multi
+  /ml
+
+
+17) /md
+-------
+用途：开启/关闭 Markdown 渲染显示（只影响 AI 输出的显示方式）。
+说明：
+- ON：会尝试用 Rich 在终端渲染 Markdown（标题、列表、代码块更好看）
+- OFF：原样输出文本
+
+用法：
+  /md on
+  /md off
+  /md        （不带参数：在 on/off 间切换）
+
+
+18) /mdmode
+-----------
+用途：选择 Markdown 渲染模式。
+可选：final | block | line
+说明：
+- final：等 AI 完整回答后一次性渲染（最稳定，推荐）
+- block：分段渲染（兼顾“更流式”和“排版较稳定”）
+- line：逐行渲染（最流式，但有时代码块尚未结束时会显示不完整）
+
+用法：
+  /mdmode <final|block|line>
+示例：
+  /mdmode final
+  /mdmode block
+  /mdmode line
+
+
+四、常见问题（Troubleshooting）
+-----------------------------
+
+1) 提示未找到 DEEPSEEK_API_KEY
+- 检查 exe 同目录是否存在 .env
+- 检查 .env 内容是否包含：DEEPSEEK_API_KEY=sk-xxxx
+- 或检查系统环境变量是否已设置
+
+2) Markdown/颜色显示不正常
+- 请用 Windows Terminal / PowerShell / cmd
+- 不建议使用 IDE Run 窗口
+
+3) 对话保存在哪里？
+- 默认会保存到程序的数据目录（data/conversations/...）
+- /load 不带参数会列出所有可用存档
+
+
+（完）
+
